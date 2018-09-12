@@ -24,10 +24,10 @@ refine_original$company<- gsub("unilver", "unilever", refine_original$company)
 refine_original$company<- gsub("van Houten", "van houten", refine_original$company)
 refine_original$company<- gsub("Van Houten", "van houten", refine_original$company)
 
-#separate the "Product.code...number" column into "product_code" and "product_number" columns
+#separate the "Product.code / number" column into "product_code" and "product_number" columns
 refine_original<- refine_original %>% separate(`Product code / number`,c("product_code","product_number"), sep = "-")
 
-#add "product category" column and categorize the product codes 
+#add "product" column and categorize the product codes 
 refine_original= refine_original %>% mutate(product=
   ifelse(product_code== "x","Laptop", 
          ifelse(product_code== "p", "Smartphone",
@@ -35,7 +35,7 @@ refine_original= refine_original %>% mutate(product=
                        ifelse(product_code== "q", "Tablet", product_code))))
   )
 
-#unite the "address", "city", and "country" into "full_address"
+#unite the "address", "city", and "country" columns into "full_address"
 refine_original<- refine_original %>% unite("full_address", c(address,city,country), sep = ",")
 
 #create dummy variable columns for each category in the "company" and "product code" columns
