@@ -1,0 +1,61 @@
+#install packages
+
+
+# install.packages("tidyr") #RM make sure to comment these out so you can run the whole script once the packages are installed
+library(tidyr)
+# install.packages("dplyr") #RM you can load the "tidyverse" package instead of loading tidyr, dplyr, etc. individually
+library(dplyr)
+# install.packages("fastDummies")
+library(fastDummies)
+
+
+#RM make sure to read in your data
+
+refine_original <- read.csv("refine_original.csv")
+
+#clean the "company" column 
+
+refine_original %>% group_by(company) %>% summarise()
+#RM another option here is to use uniqe(refine_original$company)
+
+refine_original$company <- gsub("fillips", "phillips", refine_original$company)
+refine_original$company <- gsub("philips", "phillips", refine_original$company)
+refine_original$company <- gsub("phillipS", "phillips", refine_original$company)
+refine_original$company <- gsub("Phillips", "phillips", refine_original$company)
+refine_original$company <- gsub("phlips", "phillips", refine_original$company)
+refine_original$company <- gsub("phillps", "phillips", refine_original$company)
+refine_original$company <- gsub("phllips", "phillips", refine_original$company)
+refine_original$company <- gsub("ak zo", "akzo", refine_original$company)
+refine_original$company <- gsub("akz0", "akzo", refine_original$company)
+refine_original$company <- gsub("Akzo", "akzo", refine_original$company)
+refine_original$company <- gsub("AKZO", "akzo", refine_original$company)
+refine_original$company <- gsub("Unilever", "unilever", refine_original$company)
+refine_original$company <- gsub("unilver", "unilever", refine_original$company)
+refine_original$company <- gsub("van Houten", "van houten", refine_original$company)
+refine_original$company <- gsub("Van Houten", "van houten", refine_original$company)
+
+#separate the "Product.code / number" column into "product_code" and "product_number" columns
+#RM There are some strange characters in these column names (I'd clean those up first)
+colnames(refine_original) <- gsub("[^[:alnum:] ]", "", colnames(refine_original))
+
+refine_original <- refine_original %>% separate(Productcodenumber, c("product_code","product_number"), sep = "-")
+
+#add "product" column and categorize the product codes 
+# RM recommend adding whitespace for readability
+refine_original <- 
+  refine_original %>% 
+  mutate(product = ifelse(product_code == "x","Laptop", 
+                     ifelse(product_code == "p", "Smartphone",
+                            ifelse(product_code == "v", "Tv", 
+                                   ifelse(product_code == "q", "Tablet", product_code))))
+  )
+
+#unite the "address", "city", and "country" columns into "full_address"
+refine_original <-
+  refine_original %>%
+    unite("full_address", c(address,city,country), sep = ", ") # RM add spaes, too
+
+#create dummy variable columns for each category in the "company" and "product code" columns
+refine_original <- refine_original %>% dummy_cols(select_columns = "company")
+refine_original <- refine_original %>% dummy_cols(select_columns = "product")
+
